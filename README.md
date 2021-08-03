@@ -1,5 +1,12 @@
 # CKA - Cluster enviroment
 
-I'm studing for the CKA exam and need an k8s cluster to practice, so why not to take advantage of this need and  improve my skills with other tools like Terraform?
+I'm studying for the CKA exam and need a k8s cluster to practice, so why not take advantage of this need and improve my skills with other tools like Terraform and git?
 
-The initial target is to write terraform files to deploy a base kubernetes cluster in AWS and/or in a local KVM enviroment.
+The initial target is to write terraform files to deploy nodes to be used in a Kubernetes cluster in AWS or in a local KVM environment.
+
+
+# How to use?
+
+
+
+# FAQ:
