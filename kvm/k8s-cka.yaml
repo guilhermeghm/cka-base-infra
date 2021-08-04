@@ -1,0 +1,74 @@
+#cloud-config
+write_files:
+- path: /tmp/k8s-cka.sh
+  content: |
+    #!/bin/bash
+     
+    #Create the network configuration.
+    cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+    overlay
+    br_netfilter
+    EOF
+
+    sudo modprobe overlay
+    sudo modprobe br_netfilter
+
+    cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+    net.bridge.bridge-nf-call-iptables  = 1
+    net.ipv4.ip_forward                 = 1
+    net.bridge.bridge-nf-call-ip6tables = 1
+    EOF
+
+    sudo sysctl --system
+
+    #Install and configure containerd.
+    sudo apt-get update && sudo apt-get install -y containerd
+    sudo mkdir -p /etc/containerd
+    sudo containerd config default | sudo tee /etc/containerd/config.toml
+    sudo systemctl restart containerd
+
+    #Disable swao:
+    sudo swapoff -a
+
+    #To force hostname via DHCP.
+    sudo echo "localhost" > /etc/hostname
+    
+    #Install kubeadm, kubelet, and kubectl.
+    sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+    cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    deb https://apt.kubernetes.io/ kubernetes-xenial main
+    EOF
+
+    sudo apt-get update && sudo apt-get dist-upgrade
+    sudo apt-get install -y kubelet=1.20.0-00 kubeadm=1.20.0-00 kubectl=1.20.0-00
+    sudo apt-mark hold kubelet kubeadm kubectl
+    
+     #Additional package for troubleshooting 
+     sudo apt install -y net-tools 
+
+     #To keep the SSh session alive.
+     sudo echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
+     systemctl restart sshd
+
+runcmd:
+- ["sh", "/tmp/k8s-cka.sh"]
+
+ssh_pwauth: True
+
+users:
+  - name: ubuntu 
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDPT3vePunRZgZPF1UlGUF1uWYL4PzsyJ31ywU+gie7ZNZGv6lf5rL0M4f4zYiWD1bSEwk6NVJKH0qWYf+uU6F0HJgM6o2rIcDbRz38r/1X5WcC3c7LbwhR+8if6VTJ8Mx4hKAshYNy7Xd5tVKdrx2pEIdyPoc6VApDRR7Br3r+7H3hiQ7pX16mKR3KZ8QoEx1rRzdwKELyQ//2sXhTUR8zb4ipCN/Yi7kSqO1vtY9XY67dRBMF+iiy6IAy4wYbyhrEZm8z4Yi5LeK+uy2vpcD4fbOF76zhXq111hRMpYim9dB9IU6EMODFF9aKT2wL43dHZxWMgZGO6FjgWcxYKC6hqlITA1Ap5F4TLoCPH9w35e0jNG0W1AYw/hnWl+rjf0h2sPBpqujXUo+jcr1X6R26NC4rSevZTzyICvN1AqeFQ1gAWbzBdgf99M4LsTtYlKYs25bkVKYcXzCTIldYzmGZ6mtG6TtNreTbPTLTGxYiQK+Z+64S+rcaFFETbs9JreE=
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    groups: wheel
+
+#Workaround to force the VM to get hostname via DHCP.
+power_state:
+  delay: now
+  mode: reboot
+  message: Reboot to apply new hostname
+  timeout: 10
