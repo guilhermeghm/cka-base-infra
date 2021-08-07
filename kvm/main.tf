@@ -1,4 +1,4 @@
-#Set the required versions and the backend.
+#Set the required terraform and provider versions.
 terraform {
   required_version = ">= 0.13"
   required_providers {
@@ -9,7 +9,7 @@ terraform {
 }
 
 
-#Define the connection.
+#Define the connection, in this case, it is connecting to the local machine.
 provider "libvirt" {
   uri = "qemu:///system"
 }

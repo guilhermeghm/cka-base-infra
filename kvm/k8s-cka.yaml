@@ -4,7 +4,7 @@ write_files:
   content: |
     #!/bin/bash
      
-    #Create the network configuration.
+    #Prepare the network requirements.
     cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
     overlay
     br_netfilter
@@ -27,13 +27,13 @@ write_files:
     sudo containerd config default | sudo tee /etc/containerd/config.toml
     sudo systemctl restart containerd
 
-    #Disable swao:
+    #Disable swap:
     sudo swapoff -a
 
     #To force hostname via DHCP.
     sudo echo "localhost" > /etc/hostname
     
-    #Install kubeadm, kubelet, and kubectl.
+    #Install kubeadm, kubelet, and kubectl version 1.20.0.
     sudo apt-get update && sudo apt-get install -y apt-transport-https curl
 
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -46,18 +46,17 @@ write_files:
     sudo apt-get install -y kubelet=1.20.0-00 kubeadm=1.20.0-00 kubectl=1.20.0-00
     sudo apt-mark hold kubelet kubeadm kubectl
     
-     #Additional package for troubleshooting 
-     sudo apt install -y net-tools 
+    #Additional package for troubleshooting.
+    sudo apt install -y net-tools 
 
-     #To keep the SSh session alive.
-     sudo echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
-     systemctl restart sshd
+    #To keep the SSH session alive.
+    sudo echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
+    systemctl restart sshd
 
 runcmd:
 - ["sh", "/tmp/k8s-cka.sh"]
 
-ssh_pwauth: True
-
+#Define the ubuntu user.
 users:
   - name: ubuntu 
     ssh_authorized_keys:
@@ -66,7 +65,7 @@ users:
     shell: /bin/bash
     groups: wheel
 
-#Workaround to force the VM to get hostname via DHCP.
+#Workaround to reboot the VM to force it to get hostname via DHCP.
 power_state:
   delay: now
   mode: reboot

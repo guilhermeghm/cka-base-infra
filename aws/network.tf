@@ -11,7 +11,7 @@ data "aws_availability_zones" "azs" {
   state = "available"
 }
 
-#Create subnets
+#Create subnets.
 resource "aws_subnet" "subnet1" {
   availability_zone = element(data.aws_availability_zones.azs.names, 0)
   vpc_id            = aws_vpc.vpc_k8s-cka.id

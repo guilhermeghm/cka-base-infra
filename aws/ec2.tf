@@ -1,4 +1,4 @@
-#Get Linux AMI ID using SSM Parameter endpoint in us-east-1
+#Get Linux AMI ID using SSM Parameter endpoint.
 data "aws_ssm_parameter" "UbuntuAMI" {
   name = "/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
 }
@@ -8,13 +8,14 @@ data "template_file" "user_data_k8s-cka" {
   template = file("k8s-cka.yaml")
 }
 
-#Set the SSH keypair
+#Set the SSH keypair.
 resource "aws_key_pair" "k8s-cka" {
   key_name   = "k8s-cka"
   public_key = file("k8s-cka.pub")
 }
 
-#Creating and bootstrap k8s-cka
+#Creating and bootstrap EC2 instance.
+#It will create all EC2 in the same subnet.
 resource "aws_instance" "ec2-k8s-cka" {
   count                       = var.instance_count
   ami                         = data.aws_ssm_parameter.UbuntuAMI.value
