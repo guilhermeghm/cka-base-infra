@@ -15,6 +15,7 @@ resource "libvirt_volume" "os_volume" {
   base_volume_id = libvirt_volume.k8s-cka_image.id
   size           = 6442450944
   count          = var.count_vms
+  pool           = libvirt_pool.k8s-cka_pool.name
 }
 
 resource "libvirt_network" "k8s-cka_network" {
