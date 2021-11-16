@@ -34,7 +34,7 @@ $ terraform apply
 
 **KVM**
 
-Use the ssh-keygen command to create you own key pair, use the name "k8s-cka.key" for the private key:
+Use the ssh-keygen command to create you own key pair, use the name "k8s-cka.key.pub" for the private key:
 ```bash
 $ cd kvm
 $ ssh-keygen
